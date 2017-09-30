@@ -25,7 +25,17 @@ export class App extends React.Component<{}, { game: Game }>{
       });
     }
   };
+  restart = () => {
+    this.setState({
+      game: new Game()
+    })
+  }
   render() {
-    return <Board game={this.state.game} onCellClick={this.onCellClick} />
+    return (
+      <div>
+        <Board game={this.state.game} onCellClick={this.onCellClick} />
+        <button onClick={this.restart}>Start Over</button>
+      </div>
+    );
   }
 }

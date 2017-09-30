@@ -1,9 +1,17 @@
 import * as util from './util';
 
+export interface GameOptions {
+  colCount: number;
+  rowCount: number;
+  bombCount: number;
+  name: string;
+}
+
 var defaultOptions = {
   colCount: 9,
   rowCount: 9,
-  bombCount: 10
+  bombCount: 10,
+  name: 'Minesweeper'
 };
 
 export interface GameState {
@@ -14,18 +22,18 @@ export interface GameState {
   rowCount: number;
 }
 
-function createState(options): GameState {
-  options = util.combine(defaultOptions, options);
+function createState(options: Partial<GameOptions>): GameState {
+  let useOptions: GameOptions = util.combine(defaultOptions, options);
   return {
     _isState: true,
-    name: options.name || 'Minesweeper',
-    cells: buildBoard(options),
-    colCount: options.colCount,
-    rowCount: options.rowCount
+    name: useOptions.name,
+    cells: buildBoard(useOptions),
+    colCount: useOptions.colCount,
+    rowCount: useOptions.rowCount
   };
 }
 
-function buildBoard(options): Uint8Array {
+function buildBoard(options: GameOptions): Uint8Array {
   var cellCount = options.rowCount * options.colCount;
   var cells = new Uint8Array(options.colCount * options.rowCount).fill(0b0000);
   var randomBytes = (new Array(options.bombCount)).fill(0).map(Math.random);
@@ -38,8 +46,8 @@ function buildBoard(options): Uint8Array {
   return cells;
 }
 
-function isGameState(optionsOrState) {
-  return optionsOrState._isState
+function isGameState(optionsOrState): optionsOrState is GameState {
+  return optionsOrState && optionsOrState._isState
 }
 
 enum CellStatus {
@@ -76,8 +84,8 @@ export class Game {
   private _state: GameState;
   private _boardCache: GameBoard | null;
 
-  constructor(gameState) {
-    this._state = isGameState(gameState) ? gameState : createState(gameState);
+  constructor(gameState?: Partial<GameOptions> | GameState) {
+    this._state = isGameState(gameState) ? gameState : createState(gameState || {});
     this._boardCache = null;
   }
   get name(): string {
