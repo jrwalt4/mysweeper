@@ -1,0 +1,31 @@
+import * as React from 'react';
+import { Board } from './Board';
+import { Game } from './Game';
+import * as util from './util';
+
+export class App extends React.Component<{}, { game: Game }>{
+  constructor(props) {
+    super(props);
+    this.state = {
+      game: new Game({
+        name: 'Minesweeper'
+      })
+    };
+  }
+  onCellClick = (ev) => {
+    ev.preventDefault();
+    var cellIndex = ev.currentTarget.dataset.cellIndex;
+    var button = ev.button;
+    if (button == 0 || button == 2) {
+      this.setState(function (prevState) {
+        var game = prevState.game;
+        return {
+          game: button === 0 ? game.visitCell(cellIndex) : game.flagCell(cellIndex)
+        };
+      });
+    }
+  };
+  render() {
+    return <Board game={this.state.game} onCellClick={this.onCellClick} />
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "include": [
+    "src"
+  ],
+  "compilerOptions": {
+    "jsx": "react",
+    "outDir": "build",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "target": "es5"
+  }
+}
