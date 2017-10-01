@@ -18,32 +18,38 @@ export interface GameState {
   _isState: boolean;
   name: string;
   cells: Uint8Array;
+  mines: CellIndex[];
   colCount: number;
   rowCount: number;
 }
 
 function createState(options: Partial<GameOptions>): GameState {
   let useOptions: GameOptions = util.combine(defaultOptions, options);
+  let board = buildBoard(useOptions);
   return {
     _isState: true,
     name: useOptions.name,
-    cells: buildBoard(useOptions),
+    cells: board.cells,
+    mines: board.mineIndexes,
     colCount: useOptions.colCount,
     rowCount: useOptions.rowCount
   };
 }
 
-function buildBoard(options: GameOptions): Uint8Array {
+function buildBoard(options: GameOptions): { cells: Uint8Array, mineIndexes: CellIndex[] } {
   var cellCount = options.rowCount * options.colCount;
   var cells = new Uint8Array(options.colCount * options.rowCount).fill(0b0000);
-  var randomBytes = (new Array(options.bombCount)).fill(0).map(Math.random);
-  var bombs = util.removeDuplicates(randomBytes.map(function (num) {
-    return Math.floor(num * cellCount); //scale the value so it fills up the board
-  })); // may end up with less bombs, but we'll worry about that later
-  bombs.forEach(function (bombIndex) {
+  let mineIndexes: CellIndex[] = [];
+  while (mineIndexes.length < options.bombCount) {
+    let trialIndex: CellIndex = Math.floor(Math.random() * cellCount);
+    if (mineIndexes.indexOf(trialIndex) < 0) {
+      mineIndexes.push(trialIndex);
+    }
+  }
+  mineIndexes.forEach(function (bombIndex) {
     cells[bombIndex] = CellStatus.MINE;
   });
-  return cells;
+  return { cells, mineIndexes };
 }
 
 function isGameState(optionsOrState): optionsOrState is GameState {
@@ -60,6 +66,7 @@ enum CellStatus {
 type CellValue = number;
 type CellIndex = number;
 type GameBoard = number[][];
+type GameStatus = "win" | "loose" | "incomplete";
 
 export class Game {
 
@@ -99,6 +106,50 @@ export class Game {
   }
   get cellCount(): number {
     return this._state.rowCount * this._state.colCount;
+  }
+
+  get mineCount(): number {
+    return this._state.mines.length;
+  }
+
+  get minesFound(): number {
+    return this._state.mines.reduce(
+      (count: number, mineIndex: CellIndex) => {
+        return count + (Game.cellHasBeenFlagged(this.getValueAtIndex(mineIndex)) ? 1 : 0);
+      },
+      0
+    )
+  }
+
+  get flagsUsed(): number {
+    return this._state.cells.reduce(
+      (count: number, value: CellValue) => {
+        return count + (
+          Game.cellHasBeenFlagged(value) && (Game.cellFlagType(value) == 'flag') ?
+            1 :
+            0
+        );
+      },
+      0
+    );
+  }
+
+  get visitedOrFlaggedCells(): number {
+    let mask = CellStatus.FLAGGED | CellStatus.VISITED;
+    return this._state.cells.reduce((count, value) => {
+      return count + (util.getMask(value, mask) == 0 ? 0 : 1);
+    }, 0);
+  }
+
+  get gameStatus(): GameStatus {
+    let visitedMine = this._state.cells.findIndex(
+      (value: CellValue) => Game.cellHasBeenVisited(value) && Game.cellHasMine(value)
+    ) > -1;
+    if (visitedMine) {
+      return "loose"
+    };
+    let foundAllMines = this.mineCount === this.minesFound;
+    return ((this.visitedOrFlaggedCells == this.cellCount) && foundAllMines) ? "win" : "incomplete";
   }
 
   getCellIndex(row: number, col: number): CellIndex {

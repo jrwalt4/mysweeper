@@ -1,0 +1,8 @@
+.Stats th {
+  font-weight: bold;
+  background: lightgray;
+  padding: 0.2em 1em;
+}
+.Stats td {
+  text-align: center;
+}

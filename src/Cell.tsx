@@ -30,15 +30,21 @@ function BombCell(props) {
 }
 
 function FlaggedCell(props) {
+  let flagType = Game.cellFlagType(props.cellValue);
   return create(BasicCell, util.combine(props, {
-    className: 'fa ' + (Game.cellFlagType(props.cellValue) == 'flag' ? 'fa-flag' : 'fa-question') + (props.className || '')
+    className: [
+      'Cell-flagged',
+      'fa',
+      flagType == 'flag' ? 'fa-flag' : 'fa-question',
+      props.className || ''
+    ].join(' ')
   }));
 }
 
 function VisitedCell(props) {
   return create(BasicCell, util.combine(props, {
-    className: 'Cell-visited ' + props.className
-  }), props.adjacentMines)
+    className: ['Cell-visited', 'Cell-' + props.adjacentMines, props.className].join(' ')
+  }), props.adjacentMines || '')
 }
 
 export function Cell(props) {

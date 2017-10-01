@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Board } from './Board';
 import { Game } from './Game';
 import * as util from './util';
+import { Stats } from './Stats';
 
 export class App extends React.Component<{}, { game: Game }>{
   constructor(props) {
@@ -33,6 +34,7 @@ export class App extends React.Component<{}, { game: Game }>{
   render() {
     return (
       <div>
+        <Stats game={this.state.game} />
         <Board game={this.state.game} onCellClick={this.onCellClick} />
         <button onClick={this.restart}>Start Over</button>
       </div>

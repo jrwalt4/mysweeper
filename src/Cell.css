@@ -11,7 +11,6 @@
   font-weight: bold;
   box-shadow: inset 0 0 3px 0px #101010, inset 0 0 4px 4px #555555;
   display: block;
-  vertical-align: middle;
   height: 100%;
   line-height:1.8em;
   border-radius: 2px;
@@ -26,7 +25,7 @@
 }
 
 .Cell-flagged {
-  
+  font-weight: normal;
 }
 
 .Cell-bomb {
